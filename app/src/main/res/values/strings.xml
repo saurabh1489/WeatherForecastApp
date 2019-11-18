@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">WeatherForcastApp</string>
+    <string name="title_current">Current</string>
+    <string name="title_future">7 Days</string>
+    <string name="title_settings">Settings</string>
+</resources>
