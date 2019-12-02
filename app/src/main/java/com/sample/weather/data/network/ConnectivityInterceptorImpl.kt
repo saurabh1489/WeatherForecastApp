@@ -3,11 +3,13 @@ package com.sample.weather.data.network
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.sample.weather.di.AppContext
 import com.sample.weather.internal.ConnectivityException
 import okhttp3.Interceptor
 import okhttp3.Response
+import javax.inject.Inject
 
-class ConnectivityInterceptorImpl(context: Context) : ConnectivityInterceptor {
+class ConnectivityInterceptorImpl @Inject constructor(@AppContext context: Context) : ConnectivityInterceptor {
 
     private val isOnline by lazy {
         val connectivityManager =

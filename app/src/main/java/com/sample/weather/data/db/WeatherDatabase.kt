@@ -17,20 +17,4 @@ import com.sample.weather.data.db.entity.LocationEntity
 @TypeConverters(ListToStringTypeConverter::class)
 abstract class WeatherDatabase : RoomDatabase() {
     abstract fun currentWeatherDao(): CurrentWeatherDao
-
-    companion object {
-        @Volatile
-        private var instance: WeatherDatabase? = null
-        private val lock = Any()
-
-        operator fun invoke(context: Context) = synchronized(lock) {
-            instance ?: buildDatabase(context).also { instance = it }
-        }
-
-        fun buildDatabase(context: Context) = Room.databaseBuilder(
-            context.applicationContext,
-            WeatherDatabase::class.java,
-            "Weather_Forecast.db"
-        ).build()
-    }
 }

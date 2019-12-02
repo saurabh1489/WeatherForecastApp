@@ -9,9 +9,10 @@ import com.sample.weather.data.network.response.NetworkBoundResource
 import com.sample.weather.internal.UnitSystem
 import com.sample.weather.vi.Resource
 import kotlinx.coroutines.*
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
-class ForecastRepositoryImpl(
+class ForecastRepositoryImpl @Inject constructor(
     private val currentWeatherDao: CurrentWeatherDao,
     private val weatherApiService: WeatherApiService
 ) : ForecastRepository {

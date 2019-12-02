@@ -51,7 +51,6 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
             result.removeSource(dbSource)
             when (response) {
                 is RequestType -> {
-                    Log.d("Awasthi", "Saving call result")
                     launch {
                         withContext(Dispatchers.IO) {
                             saveCallResult(response)
