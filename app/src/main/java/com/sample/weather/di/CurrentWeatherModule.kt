@@ -1,5 +1,7 @@
 package com.sample.weather.di
 
+import com.sample.weather.data.provider.UnitProvider
+import com.sample.weather.data.provider.UnitProviderImpl
 import com.sample.weather.ui.weather.CurrentWeatherFragment
 import dagger.Binds
 import dagger.Module
@@ -15,4 +17,7 @@ abstract class CurrentWeatherModule {
     abstract fun bindCurrentWeatherFragmentInjectorFactory(
         factory: CurrentWeatherFragmentComponent.Factory
     ): AndroidInjector.Factory<*>
+
+    @Binds
+    abstract fun bindUnitSystemProvider(unitProviderImpl: UnitProviderImpl): UnitProvider
 }

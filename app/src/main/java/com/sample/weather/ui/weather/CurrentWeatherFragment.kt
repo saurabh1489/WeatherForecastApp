@@ -1,7 +1,6 @@
 package com.sample.weather.ui.weather
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -62,10 +61,6 @@ class CurrentWeatherFragment : ScopedFragment() {
         })
     }
 
-    private fun updateDataToToday() {
-        (activity as AppCompatActivity)?.supportActionBar?.subtitle = "Today"
-    }
-
     private fun updateTemperature(temperature: Double, feelsLike: Double) {
         val unitAbbreviations = chooseLocalizedUnitAbbreviation("°C", "°F")
         textView_temperature.text = "$temperature$unitAbbreviations"
@@ -93,5 +88,13 @@ class CurrentWeatherFragment : ScopedFragment() {
     private fun updateVisibility(visibilityDistance: Double) {
         val unitAbbreviation = chooseLocalizedUnitAbbreviation("km", "mi.")
         textView_visibility.text = "Visibility: $visibilityDistance $unitAbbreviation"
+    }
+
+    private fun updateDataToToday() {
+        (activity as? AppCompatActivity)?.supportActionBar?.subtitle = "Today"
+    }
+
+    private fun updateLocation(location: String) {
+        (activity as? AppCompatActivity)?.supportActionBar?.title = location
     }
 }
