@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.sample.weather.data.db.WeatherDatabase
 import com.sample.weather.data.db.dao.CurrentWeatherDao
+import com.sample.weather.data.db.dao.LocationDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -24,5 +25,11 @@ class RoomModule {
     @Provides
     fun provideCurrentWeatherDao(database: WeatherDatabase): CurrentWeatherDao {
         return database.currentWeatherDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideLocationDao(database: WeatherDatabase): LocationDao {
+        return database.locationDao()
     }
 }

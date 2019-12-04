@@ -36,6 +36,11 @@ class CurrentWeatherFragment : ScopedFragment() {
 
     private fun bindUI() = launch {
         val currentWeather = viewModel.weather.await()
+        val location = viewModel.weatherLocation.await()
+        location.observe(this@CurrentWeatherFragment, Observer {location ->
+            if(location == null) return@Observer
+            updateLocation(location.name)
+        })
         currentWeather.observe(this@CurrentWeatherFragment, Observer {
             when (it) {
                 is Resource.Success -> {
