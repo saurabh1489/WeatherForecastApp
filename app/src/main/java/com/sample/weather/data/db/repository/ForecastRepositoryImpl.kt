@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import com.sample.weather.data.db.dao.CurrentWeatherDao
 import com.sample.weather.data.db.dao.LocationDao
 import com.sample.weather.data.db.entity.CurrentWeatherEntity
-import com.sample.weather.data.db.entity.LocationEntity
+import com.sample.weather.data.db.entity.WeatherLocation
 import com.sample.weather.data.network.WeatherApiService
 import com.sample.weather.data.network.response.CurrentWeatherResponse
 import com.sample.weather.data.network.response.NetworkBoundResource
@@ -46,7 +46,7 @@ class ForecastRepositoryImpl @Inject constructor(
         }.asLiveData()
     }
 
-    override suspend fun getLocation(): LiveData<LocationEntity> {
+    override suspend fun getLocation(): LiveData<WeatherLocation> {
         return locationDao.getLocation()
     }
 }
