@@ -11,11 +11,12 @@ import com.sample.weather.di.AppContext
 import com.sample.weather.internal.LocationPermissionNotGrantedException
 import com.sample.weather.internal.asDeferred
 import kotlinx.coroutines.Deferred
+import javax.inject.Inject
 
 const val USE_DEVICE_LOCATION = "USE_DEVICE_LOCATION"
 const val CUSTOM_LOCATION = "CUSTOM_LOCATION"
 
-class LocationProviderImpl(
+class LocationProviderImpl @Inject constructor(
     private val fusedLocationProviderClient: FusedLocationProviderClient,
     @AppContext private val context: Context
 ) : PreferenceProvider(context), LocationProvider {

@@ -15,6 +15,8 @@ import javax.inject.Singleton
         RoomModule::class,
         InterceptorModule::class,
         RepositoryModule::class,
+        LocationBindModule::class,
+        LocationProviderModule::class,
         MainActivityModule::class]
 )
 interface AppComponent {

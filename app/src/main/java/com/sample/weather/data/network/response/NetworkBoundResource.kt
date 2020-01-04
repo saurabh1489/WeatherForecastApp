@@ -1,6 +1,5 @@
 package com.sample.weather.data.network.response
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,15 +15,19 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
     private val result = MediatorLiveData<Resource<ResultType>>()
 
     init {
-        result.value = Resource.Loading(null)
-        val dbSource = loadFromDb()
-        result.addSource(dbSource) { data ->
-            result.removeSource(dbSource)
-            if (shouldFetch(data)) {
-                fetchFromNetwork(dbSource)
-            } else {
-                result.addSource(dbSource) { newData ->
-                    setValue(Resource.Success(newData))
+        launch {
+            result.value = Resource.Loading(null)
+            val dbSource = loadFromDb()
+            result.addSource(dbSource) { data ->
+                launch {
+                    result.removeSource(dbSource)
+                    if (shouldFetch(data)) {
+                        fetchFromNetwork(dbSource)
+                    } else {
+                        result.addSource(dbSource) { newData ->
+                            setValue(Resource.Success(newData))
+                        }
+                    }
                 }
             }
         }
@@ -36,7 +39,7 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
         }
     }
 
-    private fun fetchFromNetwork(dbSource: LiveData<ResultType>) {
+    private suspend fun fetchFromNetwork(dbSource: LiveData<ResultType>) {
         var apiResponse: LiveData<RequestType>
         try {
             apiResponse = createCall()
@@ -71,11 +74,11 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
 
     fun asLiveData() = result as LiveData<Resource<ResultType>>
 
-    protected abstract fun loadFromDb(): LiveData<ResultType>
+    protected abstract suspend fun loadFromDb(): LiveData<ResultType>
 
-    protected abstract fun shouldFetch(data: ResultType?): Boolean
+    protected abstract suspend fun shouldFetch(data: ResultType?): Boolean
 
-    protected abstract fun createCall(): LiveData<RequestType>
+    protected abstract suspend fun createCall(): LiveData<RequestType>
 
-    protected abstract fun saveCallResult(item: RequestType)
+    protected abstract suspend fun saveCallResult(item: RequestType)
 }
