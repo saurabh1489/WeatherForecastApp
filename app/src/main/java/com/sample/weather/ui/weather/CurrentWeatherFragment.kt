@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CurrentWeatherFragment : ScopedFragment() {
+
     @Inject lateinit var viewModelFactory: CurrentWeatherViewModelFactory
+
     val viewModel: CurrentWeatherViewModel by viewModels {
         viewModelFactory
     }

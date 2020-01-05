@@ -11,10 +11,8 @@ import dagger.Provides
 
 @Module
 class LocationProviderModule {
-
     @Provides
     fun locationProviderClient(@AppContext context: Context): FusedLocationProviderClient {
         return LocationServices.getFusedLocationProviderClient(context)
     }
-
 }

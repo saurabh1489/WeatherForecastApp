@@ -1,14 +1,16 @@
 package com.sample.weather.data.network.response
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import com.sample.weather.data.db.entity.CurrentWeatherEntity
 import com.sample.weather.internal.ConnectivityException
 import com.sample.weather.vi.Resource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
 
@@ -18,18 +20,46 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
         launch {
             result.value = Resource.Loading(null)
             val dbSource = loadFromDb()
-            result.addSource(dbSource) { data ->
-                launch {
-                    result.removeSource(dbSource)
-                    if (shouldFetch(data)) {
-                        fetchFromNetwork(dbSource)
-                    } else {
-                        result.addSource(dbSource) { newData ->
-                            setValue(Resource.Success(newData))
-                        }
-                    }
+            /*val data = awaitCallback<ResultType> { test1(dbSource, it) }*/
+            val data = awaitCallback<ResultType> {
+                result.addSource(dbSource) { data ->
+                    it.onComplete(data)
                 }
             }
+            result.removeSource(dbSource)
+            if (shouldFetch(data)) {
+                fetchFromNetwork(dbSource)
+            } else {
+                result.addSource(dbSource) { newData ->
+                    setValue(Resource.Success(newData))
+                }
+            }
+            Log.d("Awasthi", "coroutine over")
+        }
+    }
+
+    interface Callback<T> {
+        fun onComplete(result: T)
+        fun onException(e: Exception?)
+    }
+
+    suspend fun <T> awaitCallback(block: (Callback<T>) -> Unit): T =
+        suspendCancellableCoroutine { cont ->
+            block(object : Callback<T> {
+                override fun onComplete(result: T) = cont.resume(result)
+                override fun onException(e: Exception?) {
+                    e?.let { cont.resumeWithException(it) }
+                }
+            })
+        }
+
+
+    fun test1(
+        dbSource: LiveData<ResultType>,
+        callback: Callback<ResultType>
+    ) {
+        result.addSource(dbSource) { data ->
+            callback.onComplete(data)
         }
     }
 

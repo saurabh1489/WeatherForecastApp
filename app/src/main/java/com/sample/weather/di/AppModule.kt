@@ -45,6 +45,7 @@ class AppModule {
                 .addQueryParameter("access_key", API_KEY)
                 .build()
             val request = chain.request().newBuilder().url(url).build()
+            Log.d("Awasthi","Url:${request.url()}")
             return@Interceptor chain.proceed(request)
         }
         return OkHttpClient.Builder()
