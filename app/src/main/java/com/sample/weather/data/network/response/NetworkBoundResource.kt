@@ -18,9 +18,8 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
 
     init {
         launch {
-            result.value = Resource.Loading(null)
+            setValue(Resource.Loading(null))
             val dbSource = loadFromDb()
-            /*val data = awaitCallback<ResultType> { test1(dbSource, it) }*/
             val data = awaitCallback<ResultType> {
                 result.addSource(dbSource) { data ->
                     it.onComplete(data)
@@ -30,11 +29,13 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
             if (shouldFetch(data)) {
                 fetchFromNetwork(dbSource)
             } else {
-                result.addSource(dbSource) { newData ->
-                    setValue(Resource.Success(newData))
+                val newData = awaitCallback<ResultType> {
+                    result.addSource(dbSource) { data ->
+                        it.onComplete(data)
+                    }
                 }
+                setValue(Resource.Success(newData))
             }
-            Log.d("Awasthi", "coroutine over")
         }
     }
 
@@ -53,16 +54,6 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
             })
         }
 
-
-    fun test1(
-        dbSource: LiveData<ResultType>,
-        callback: Callback<ResultType>
-    ) {
-        result.addSource(dbSource) { data ->
-            callback.onComplete(data)
-        }
-    }
-
     private fun setValue(newValue: Resource<ResultType>) {
         if (result.value != newValue) {
             result.value = newValue
@@ -76,28 +67,37 @@ abstract class NetworkBoundResource<RequestType, ResultType> : CoroutineScope {
         } catch (exception: ConnectivityException) {
             apiResponse = MutableLiveData<RequestType>(null)
         }
-        result.addSource(dbSource) { newData ->
-            setValue(Resource.Loading(newData))
+        val newData = awaitCallback<ResultType> {
+            result.addSource(dbSource) { data ->
+                it.onComplete(data)
+            }
         }
-        result.addSource(apiResponse) { response ->
-            result.removeSource(apiResponse)
-            result.removeSource(dbSource)
-            when (response) {
-                is RequestType -> {
-                    launch {
-                        withContext(Dispatchers.IO) {
-                            saveCallResult(response)
-                        }
-                        result.addSource(loadFromDb()) { newData ->
-                            setValue(Resource.Success(newData))
-                        }
-                    }
-                }
-                null -> {
+        setValue(Resource.Loading(newData))
+        val response = awaitCallback<RequestType> {
+            result.addSource(apiResponse) { response ->
+                it.onComplete(response)
+            }
+        }
+        result.removeSource(apiResponse)
+        result.removeSource(dbSource)
+        when (response) {
+            is RequestType -> {
+                saveCallResult(response)
+                val dbSource = loadFromDb()
+                val response = awaitCallback<ResultType> {
                     result.addSource(dbSource) { newData ->
-                        setValue(Resource.Error("No Connection Available"))
+                        it.onComplete(newData)
                     }
                 }
+                setValue(Resource.Success(response))
+            }
+            null -> {
+                awaitCallback<ResultType> {
+                    result.addSource(dbSource) { newData ->
+                        it.onComplete(newData)
+                    }
+                }
+                setValue(Resource.Error("No Connection Available"))
             }
         }
     }

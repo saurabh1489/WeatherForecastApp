@@ -25,20 +25,17 @@ class ForecastRepositoryImpl @Inject constructor(
     private val locationProvider: LocationProvider
 ) : ForecastRepository {
 
-    val TAG = "Awasthi"
-
     override suspend fun getCurrentWeather(unit: UnitSystem): LiveData<Resource<CurrentWeatherEntity>> {
         return object : NetworkBoundResource<CurrentWeatherResponse, CurrentWeatherEntity>() {
             override val coroutineContext: CoroutineContext
                 get() = Job() + Dispatchers.Main
 
             override suspend fun loadFromDb(): LiveData<CurrentWeatherEntity> {
-                Log.d(TAG,"loadFromDb()")
+                Log.d("Awasthi","load from db : ${Thread.currentThread().name}")
                 return currentWeatherDao.getCurrentWeather()
             }
 
             override suspend fun shouldFetch(data: CurrentWeatherEntity?): Boolean {
-                Log.d(TAG,"shouldFetch()")
                 var lastLocation:WeatherLocation? = null
                 withContext(Dispatchers.IO) {
                     lastLocation = locationDao.getLocationNonLive()
@@ -47,14 +44,14 @@ class ForecastRepositoryImpl @Inject constructor(
             }
 
             override suspend fun createCall(): LiveData<CurrentWeatherResponse> {
-                Log.d(TAG,"createCall()")
                 return weatherApiService.getCurrentWeather(locationProvider.getPreferredLocationString(), unit)
             }
 
             override suspend fun saveCallResult(item: CurrentWeatherResponse) {
-                Log.d(TAG,"saveCallResult()")
-                currentWeatherDao.updateAndInsert(item.current)
-                locationDao.updateAndInsert(item.location)
+                withContext(Dispatchers.IO) {
+                    currentWeatherDao.updateAndInsert(item.current)
+                    locationDao.updateAndInsert(item.location)
+                }
             }
 
         }.asLiveData()
